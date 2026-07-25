@@ -3,7 +3,7 @@ import { env } from './env.js';
 import { pool } from './db/index.js';
 import { runMigrations } from './db/migrate.js';
 import { seedIfEmpty } from './db/seed.js';
-import { articlesRouter } from './routes/articles.js';
+import { articlesRouter } from './features/articles/articles.router.js';
 
 async function main() {
   // Bring the schema up to date, then seed sample data on a fresh DB.

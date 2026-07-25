@@ -13,6 +13,7 @@
     "dev:web": "yarn workspace @carma/web dev",
     "build": "yarn workspaces foreach -Apt run build",
     "typecheck": "yarn workspaces foreach -Ap run typecheck",
+    "test": "yarn workspaces foreach -Ap --include '@carma/shared' --include '@carma/api' run test",
     "db:generate": "yarn workspace @carma/api db:generate",
     "db:migrate": "yarn workspace @carma/api db:migrate",
     "db:studio": "yarn workspace @carma/api db:studio"

@@ -7,20 +7,30 @@ export interface CursorRequest {
   direction: "next" | "prev";
 }
 
+const FIRST_PAGE: CursorRequest = { cursor: null, direction: "next" };
+
 /**
  * Reusable keyset-pagination navigation. Owns the `request` (cursor + direction)
  * that a data hook feeds into its fetch, and derives `goNext`/`goPrev` from the
- * latest `PageInfo`. Not tied to any particular resource — pass it the `PageInfo`
- * of whatever cursor-paginated endpoint you're consuming.
+ * latest `PageInfo`. Not tied to any particular resource.
  *
- *   const { request, goNext, goPrev } = useCursorPagination(pageInfo);
- *   // fetch using `request`, then render buttons wired to goNext/goPrev.
+ * Pass `resetKey` (e.g. the current search query) to snap back to the first page
+ * whenever it changes — the reset happens during render so the data hook makes a
+ * single fetch, not one for the stale cursor and another for the reset.
  */
-export function useCursorPagination(pageInfo: PageInfo | null) {
-  const [request, setRequest] = useState<CursorRequest>({
-    cursor: null,
-    direction: "next",
-  });
+export function useCursorPagination(
+  pageInfo: PageInfo | null,
+  resetKey?: unknown,
+) {
+  const [request, setRequest] = useState<CursorRequest>(FIRST_PAGE);
+
+  // Reset to page one when resetKey changes (render-time, guarded — the React
+  // "adjusting state on prop change" pattern).
+  const prevResetKey = useRef(resetKey);
+  if (prevResetKey.current !== resetKey) {
+    prevResetKey.current = resetKey;
+    setRequest(FIRST_PAGE);
+  }
 
   // Keep the latest pageInfo in a ref so goNext/goPrev stay referentially stable
   // while always reading current values.

@@ -66,6 +66,68 @@ h1 {
   opacity: 0.6;
 }
 
+.search {
+  margin: 1.25rem 0 1.75rem;
+}
+
+.search-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid color-mix(in oklab, currentColor 30%, transparent);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.search-input.invalid {
+  border-color: #d33;
+}
+
+.search button {
+  padding: 0.55rem 1rem;
+  border: 1px solid color-mix(in oklab, currentColor 30%, transparent);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.search button:hover:not(:disabled) {
+  background: color-mix(in oklab, currentColor 10%, transparent);
+}
+
+.search button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.search-hint,
+.search-error {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+}
+
+.search-hint {
+  opacity: 0.6;
+}
+
+.search-hint code {
+  background: color-mix(in oklab, currentColor 12%, transparent);
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.25rem;
+}
+
+.search-error {
+  color: #d33;
+}
+
 .pager {
   display: flex;
   align-items: center;

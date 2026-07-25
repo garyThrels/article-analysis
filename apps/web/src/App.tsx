@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { ArticleListItem } from "./components/ArticleListItem";
 import { EmptyState } from "./components/EmptyState";
+import { SearchBar } from "./components/SearchBar";
 import { useArticles } from "./hooks/useArticles";
 
 export function App() {
-  const { state, isFetching, goNext, goPrev } = useArticles();
+  const [q, setQ] = useState("");
+  const { state, isFetching, goNext, goPrev } = useArticles(q);
 
   const canPrev =
     state.status === "ready" && state.pageInfo.hasPrev && !isFetching;
@@ -18,10 +21,15 @@ export function App() {
         Articles served from Postgres via Express + Drizzle.
       </p>
 
+      <SearchBar onSearch={setQ} />
+
       {state.status === "error" ? (
         <p className="error">Failed to load articles: {state.message}</p>
       ) : state.status !== "ready" || state.articles.length === 0 ? (
-        <EmptyState loading={state.status !== "ready"} hasQuery={false} />
+        <EmptyState
+          loading={state.status !== "ready"}
+          hasQuery={q.trim().length > 0}
+        />
       ) : (
         <>
           <ul className="articles" aria-busy={isFetching}>

@@ -353,13 +353,15 @@ for model selection, guardrails, and projected cost.
 
 ### API surface
 
-| Endpoint                         | Purpose                                                            |
-| -------------------------------- | ------------------------------------------------------------------ |
-| `GET /api/articles`              | Keyset-paginated list; filter by `source`, `language`, date range. |
-| `GET /api/articles/search?q=...` | Boolean search (parser → `tsquery`), same filters + pagination.    |
-| `GET /api/articles/aggregate`    | Counts grouped by month, filterable (sentiment/source/topic).      |
+| Endpoint                      | Purpose                                                                                     |
+| ----------------------------- | ------------------------------------------------------------------------------------------- |
+| `GET /api/articles`           | Keyset-paginated list. Optional `?q=` runs boolean search (parser → `tsquery`); `?limit=`, `?cursor=`, `?direction=next\|prev` drive pagination. (Filters `source`/`language`/date range slot in here too.) |
+| `GET /api/articles/aggregate` | Counts grouped by month, filterable (sentiment/source/topic). _(planned)_                   |
 
-All responses use a shared `ApiResponse<T>` / `ApiError` envelope from `@carma/shared`.
+Search is an optional filter on the list endpoint rather than a separate route, so
+it composes with the same keyset pagination. List responses use the shared
+`Paginated<T>` envelope (`{ data, pageInfo }`); errors use `ApiError`, both from
+`@carma/shared`. A malformed `q` returns **400** with the parser's message.
 
 ---
 
