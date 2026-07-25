@@ -1,0 +1,64 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-carma}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-carma}
+      POSTGRES_DB: ${POSTGRES_DB:-carma}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-carma} -d ${POSTGRES_DB:-carma}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Reach Postgres via the compose service name "db".
+      DATABASE_URL: postgres://${POSTGRES_USER:-carma}:${POSTGRES_PASSWORD:-carma}@db:5432/${POSTGRES_DB:-carma}
+      API_PORT: 3000
+    ports:
+      - "3000:3000"
+    volumes:
+      # Bind-mount the repo for hot reload, but keep container-installed
+      # node_modules (don't let the host's shadow them).
+      - .:/app
+      - /app/node_modules
+      - /app/apps/api/node_modules
+      - /app/apps/web/node_modules
+      - /app/packages/shared/node_modules
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    depends_on:
+      - api
+    environment:
+      WEB_PORT: 5173
+      # Vite dev-server proxy forwards /api to the api service.
+      VITE_API_PROXY_TARGET: http://api:3000
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/api/node_modules
+      - /app/apps/web/node_modules
+      - /app/packages/shared/node_modules
+
+volumes:
+  db-data:

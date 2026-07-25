@@ -1,0 +1,23 @@
+{
+  "name": "carma",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "yarn@4.10.3",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "yarn workspaces foreach -Api --include '@carma/api' --include '@carma/web' run dev",
+    "dev:api": "yarn workspace @carma/api dev",
+    "dev:web": "yarn workspace @carma/web dev",
+    "build": "yarn workspaces foreach -Apt run build",
+    "typecheck": "yarn workspaces foreach -Ap run typecheck",
+    "db:generate": "yarn workspace @carma/api db:generate",
+    "db:migrate": "yarn workspace @carma/api db:migrate",
+    "db:studio": "yarn workspace @carma/api db:studio"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

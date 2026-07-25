@@ -1,0 +1,13 @@
+**/node_modules
+**/dist
+**/build
+**/*.tsbuildinfo
+.yarn/cache
+.yarn/install-state.gz
+.git
+.gitignore
+**/.env
+**/.env.*
+!**/.env.example
+*.log
+.DS_Store
