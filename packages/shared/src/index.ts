@@ -14,8 +14,8 @@ export interface Article {
   body: string;
   /** Publisher/source of the article (e.g. "Reuters"). */
   source: string;
-  /** ISO-8601 timestamp string, or null if the article has no publish date. */
-  publishedAt: string | null;
+  /** ISO-8601 timestamp string (the column is now NOT NULL). */
+  publishedAt: string;
   /** ISO-8601 timestamp string (serialised from the DB `timestamp`). */
   createdAt: string;
 }
