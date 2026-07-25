@@ -366,6 +366,30 @@ errors use `ApiError`, both from `@carma/shared`. A malformed `q`, a bad
 `source`/`language` id, an invalid date, or a `to` before `from` all return
 **400** with a descriptive message.
 
+### Known issue — search + filter state are out of sync
+
+**Bug:** the search box commits its text to the query only on submit (Enter /
+Search), while the filter controls commit on change. Because both write into the
+same query object, editing the search input *without submitting* and then changing
+a filter re-applies the **stale** search term alongside the new filter.
+
+_Repro:_ type a phrase → Search → clear the input (don't press Enter) → change the
+source filter. Expected: results filtered by source with **no** search. Actual: the
+previously-submitted phrase is still applied, because `query.q` never updated when
+the input was cleared.
+
+**Root cause:** two independent commit paths (search-on-submit vs. filter-on-change)
+over shared state in `App`, so the search input's current text and the applied `q`
+can diverge. `SearchBar` holds the live text locally; `App.query.q` holds the last
+submitted value.
+
+**Planned fix:** lift the whole query into a **context provider** as the single
+source of truth, and have the search input keep the provider's `q` current as the
+user types (debounced) — or, at minimum, commit the input's current text whenever
+*any* filter changes. Then changing a filter uses whatever is in the box right now,
+Enter or not, and search + filters always stay consistent. This restructure is not
+yet done.
+
 ---
 
 ## LLM Cost Analysis
