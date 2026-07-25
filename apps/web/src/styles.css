@@ -65,3 +65,35 @@ h1 {
 .article-meta time {
   opacity: 0.6;
 }
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.pager button {
+  padding: 0.5rem 1rem;
+  border: 1px solid color-mix(in oklab, currentColor 30%, transparent);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.pager button:hover:not(:disabled) {
+  background: color-mix(in oklab, currentColor 10%, transparent);
+}
+
+.pager button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pager-status {
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
