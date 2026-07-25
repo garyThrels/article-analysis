@@ -2,7 +2,7 @@ import { Router, type Response } from "express";
 import type { Article, ApiError, Paginated } from "@carma/shared";
 import { ParseError } from "@carma/shared";
 import { CursorError } from "../../lib/cursor.js";
-import { buildArticleFilters } from "./articles.filters.js";
+import { buildArticleFilters, FilterError, parseArticleFilters } from "./articles.filters.js";
 import { findArticlesPage } from "./articles.repository.js";
 import { toArticle } from "./articles.mapper.js";
 import {
@@ -27,18 +27,20 @@ function badRequest(res: Response, message: string) {
 articlesRouter.get("/", async (req, res) => {
   const limit = parseLimit(req.query.limit);
   const direction = parseDirection(req.query.direction);
-  const q = typeof req.query.q === "string" ? req.query.q : undefined;
   const cursorToken =
     typeof req.query.cursor === "string" && req.query.cursor.length > 0
       ? req.query.cursor
       : undefined;
 
-  // Build filters (malformed search query → 400).
+  // Parse + validate filters, then compile them to a predicate.
+  // FilterError (bad id / date / range) and ParseError (bad q) → 400.
   let filter;
   try {
-    filter = buildArticleFilters({ q });
+    filter = buildArticleFilters(parseArticleFilters(req.query));
   } catch (err) {
-    if (err instanceof ParseError) return badRequest(res, err.message);
+    if (err instanceof FilterError || err instanceof ParseError) {
+      return badRequest(res, err.message);
+    }
     throw err;
   }
 

@@ -49,3 +49,22 @@ export interface Paginated<T> {
 export interface ApiError {
   error: string;
 }
+
+/** A news source/publisher (filter dimension). */
+export interface Source {
+  id: number;
+  name: string;
+}
+
+/** A content language (filter dimension). */
+export interface Language {
+  id: number;
+  code: string;
+  name: string;
+}
+
+/** Reference data for populating the filter controls. */
+export interface Lookups {
+  sources: Source[];
+  languages: Language[];
+}

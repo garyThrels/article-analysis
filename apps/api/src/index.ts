@@ -4,6 +4,7 @@ import { pool } from './db/index.js';
 import { runMigrations } from './db/migrate.js';
 import { seedIfEmpty } from './db/seed.js';
 import { articlesRouter } from './features/articles/articles.router.js';
+import { lookupsRouter } from './features/lookups/lookups.router.js';
 
 async function main() {
   // Bring the schema up to date, then seed sample data on a fresh DB.
@@ -19,6 +20,7 @@ async function main() {
   });
 
   app.use('/api/articles', articlesRouter);
+  app.use('/api/lookups', lookupsRouter);
 
   const server = app.listen(env.port, () => {
     console.log(`[api] listening on http://localhost:${env.port}`);

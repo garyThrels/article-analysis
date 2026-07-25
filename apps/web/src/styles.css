@@ -128,6 +128,63 @@ h1 {
   color: #d33;
 }
 
+.filters {
+  margin: 0 0 1.5rem;
+}
+
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+}
+
+.field > span {
+  opacity: 0.7;
+}
+
+.field select,
+.field input {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid color-mix(in oklab, currentColor 30%, transparent);
+  border-radius: 0.4rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.field input[aria-invalid="true"] {
+  border-color: #d33;
+}
+
+.filters-clear {
+  padding: 0.45rem 0.8rem;
+  border: 1px solid color-mix(in oklab, currentColor 30%, transparent);
+  border-radius: 0.4rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.filters-clear:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.filters-error {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  color: #d33;
+}
+
 .pager {
   display: flex;
   align-items: center;

@@ -355,13 +355,16 @@ for model selection, guardrails, and projected cost.
 
 | Endpoint                      | Purpose                                                                                     |
 | ----------------------------- | ------------------------------------------------------------------------------------------- |
-| `GET /api/articles`           | Keyset-paginated list. Optional `?q=` runs boolean search (parser → `tsquery`); `?limit=`, `?cursor=`, `?direction=next\|prev` drive pagination. (Filters `source`/`language`/date range slot in here too.) |
+| `GET /api/articles`           | Keyset-paginated list. Optional filters: `?q=` boolean search (parser → `tsquery`), `?source=<id>`, `?language=<id>`, `?from=`/`?to=` (ISO) date range. `?limit=`, `?cursor=`, `?direction=next\|prev` drive pagination. |
+| `GET /api/lookups`            | Reference data for the filter controls: `{ sources, languages }`.                           |
 | `GET /api/articles/aggregate` | Counts grouped by month, filterable (sentiment/source/topic). _(planned)_                   |
 
-Search is an optional filter on the list endpoint rather than a separate route, so
-it composes with the same keyset pagination. List responses use the shared
-`Paginated<T>` envelope (`{ data, pageInfo }`); errors use `ApiError`, both from
-`@carma/shared`. A malformed `q` returns **400** with the parser's message.
+Search and filters are optional query params on the list endpoint rather than
+separate routes, so they compose with each other and with the keyset pagination.
+List responses use the shared `Paginated<T>` envelope (`{ data, pageInfo }`);
+errors use `ApiError`, both from `@carma/shared`. A malformed `q`, a bad
+`source`/`language` id, an invalid date, or a `to` before `from` all return
+**400** with a descriptive message.
 
 ---
 

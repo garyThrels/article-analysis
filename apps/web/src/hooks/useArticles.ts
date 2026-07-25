@@ -1,37 +1,52 @@
 import { Paginated, Article, ApiError } from "@carma/shared";
 import { useEffect, useRef, useState } from "react";
-import { ArticlesState } from "../types";
+import { ArticleQuery, ArticlesState } from "../types";
 import { useCursorPagination } from "./useCursorPagination";
 
+/** Build the API query params from a request cursor + the article query. */
+function buildParams(
+  request: { cursor: string | null; direction: "next" | "prev" },
+  query: ArticleQuery,
+  limit: number,
+): string {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (request.cursor) {
+    params.set("cursor", request.cursor);
+    params.set("direction", request.direction);
+  }
+  const q = query.q.trim();
+  if (q) params.set("q", q);
+  if (query.sourceId !== null) params.set("source", String(query.sourceId));
+  if (query.languageId !== null) params.set("language", String(query.languageId));
+  // Date inputs are `yyyy-mm-dd`; widen to full-day UTC bounds so the range is
+  // inclusive of both endpoints.
+  if (query.from) params.set("from", `${query.from}T00:00:00.000Z`);
+  if (query.to) params.set("to", `${query.to}T23:59:59.999Z`);
+  return params.toString();
+}
+
 /**
- * Keyset-paginated articles with optional boolean search (`q`). Navigation is
- * delegated to useCursorPagination; passing `q` as its reset key snaps back to
- * page one whenever the search changes.
+ * Keyset-paginated articles for a given search + filter query. Any change to the
+ * query snaps pagination back to page one (via useCursorPagination's reset key).
  */
-export function useArticles(q = "", limit = 5) {
+export function useArticles(query: ArticleQuery, limit = 5) {
   const [state, setState] = useState<ArticlesState>({ status: "loading" });
   const [isFetching, setIsFetching] = useState(true);
   // Skip the scroll-to-top on the very first load (already at the top).
   const isInitialLoad = useRef(true);
 
   const pageInfo = state.status === "ready" ? state.pageInfo : null;
-  const { request, goNext, goPrev } = useCursorPagination(pageInfo, q);
+  // A primitive key that changes whenever any part of the query changes.
+  const resetKey = JSON.stringify(query);
+  const { request, goNext, goPrev } = useCursorPagination(pageInfo, resetKey);
 
   useEffect(() => {
     const controller = new AbortController();
     setIsFetching(true);
 
     async function load() {
-      const params = new URLSearchParams({ limit: String(limit) });
-      if (request.cursor) {
-        params.set("cursor", request.cursor);
-        params.set("direction", request.direction);
-      }
-      const trimmed = q.trim();
-      if (trimmed) params.set("q", trimmed);
-
       try {
-        const res = await fetch(`/api/articles?${params.toString()}`, {
+        const res = await fetch(`/api/articles?${buildParams(request, query, limit)}`, {
           signal: controller.signal,
         });
         if (!res.ok) {
@@ -50,7 +65,6 @@ export function useArticles(q = "", limit = 5) {
           articles: body.data,
           pageInfo: body.pageInfo,
         });
-        // On a page/search change (not the first load), scroll back to the top.
         if (isInitialLoad.current) {
           isInitialLoad.current = false;
         } else {
@@ -69,7 +83,9 @@ export function useArticles(q = "", limit = 5) {
 
     void load();
     return () => controller.abort();
-  }, [request, limit, q]);
+    // `resetKey` captures every field of `query`; `request` covers pagination.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [request, limit, resetKey]);
 
   return { state, isFetching, goNext, goPrev };
 }
