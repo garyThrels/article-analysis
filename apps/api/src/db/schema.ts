@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 /**
  * Minimal `articles` table — the starting point for the schema.
@@ -8,11 +8,14 @@ import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
  * `yarn db:migrate` (applies it). The API also auto-applies pending migrations
  * on startup — see src/db/migrate.ts.
  */
-export const articles = pgTable('articles', {
-  id: serial('id').primaryKey(),
-  title: text('title').notNull(),
-  body: text('body').notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true })
+export const articles = pgTable("articles", {
+  id: serial("id").primaryKey(),
+  headline: text("headline").notNull(),
+  body: text("body").notNull(),
+  source: text("source").notNull(),
+  publishedAt: timestamp("published_at", { withTimezone: true }),
+  language: varchar("language", { length: 8 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
 });

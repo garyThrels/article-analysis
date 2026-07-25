@@ -1,5 +1,5 @@
 {
-  "id": "dbe123f2-f7f6-4585-b0f0-24a5ab3a010e",
+  "id": "3c168ccf-33be-4108-acf9-b4bf8bc8d8da",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -14,8 +14,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "title": {
-          "name": "title",
+        "headline": {
+          "name": "headline",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -23,6 +23,24 @@
         "body": {
           "name": "body",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "language": {
+          "name": "language",
+          "type": "varchar(8)",
           "primaryKey": false,
           "notNull": true
         },

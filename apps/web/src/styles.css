@@ -49,9 +49,19 @@ h1 {
   margin: 0 0 0.4rem;
 }
 
-.article time {
-  display: block;
+.article-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
   margin-top: 0.6rem;
   font-size: 0.8rem;
+}
+
+.article-meta .source {
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.article-meta time {
   opacity: 0.6;
 }

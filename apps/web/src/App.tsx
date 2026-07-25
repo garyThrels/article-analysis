@@ -1,4 +1,4 @@
-import { ArticleListItem } from "./components/ArticleLitItem";
+import { ArticleListItem } from "./components/ArticleListItem";
 import { EmptyState } from "./components/EmptyState";
 import { useArticles } from "./hooks/useArticles";
 

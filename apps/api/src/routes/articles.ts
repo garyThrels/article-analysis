@@ -1,8 +1,8 @@
-import { Router } from 'express';
-import { desc } from 'drizzle-orm';
-import type { Article, ApiResponse } from '@carma/shared';
-import { db } from '../db/index.js';
-import { articles, type ArticleRow } from '../db/schema.js';
+import { Router } from "express";
+import { desc } from "drizzle-orm";
+import type { Article, ApiResponse } from "@carma/shared";
+import { db } from "../db/index.js";
+import { articles, type ArticleRow } from "../db/schema.js";
 
 export const articlesRouter = Router();
 
@@ -10,15 +10,20 @@ export const articlesRouter = Router();
 function toArticle(row: ArticleRow): Article {
   return {
     id: row.id,
-    title: row.title,
+    headline: row.headline,
     body: row.body,
+    source: row.source,
+    publishedAt: row.publishedAt ? row.publishedAt.toISOString() : null,
     createdAt: row.createdAt.toISOString(),
   };
 }
 
 // GET /api/articles -> newest first
-articlesRouter.get('/', async (_req, res) => {
-  const rows = await db.select().from(articles).orderBy(desc(articles.createdAt));
+articlesRouter.get("/", async (_req, res) => {
+  const rows = await db
+    .select()
+    .from(articles)
+    .orderBy(desc(articles.createdAt));
   const body: ApiResponse<Article[]> = { data: rows.map(toArticle) };
   res.json(body);
 });

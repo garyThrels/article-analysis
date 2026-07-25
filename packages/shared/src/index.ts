@@ -10,15 +10,19 @@
 /** A single article record as returned by the API. */
 export interface Article {
   id: number;
-  title: string;
+  headline: string;
   body: string;
+  /** Publisher/source of the article (e.g. "Reuters"). */
+  source: string;
+  /** ISO-8601 timestamp string, or null if the article has no publish date. */
+  publishedAt: string | null;
   /** ISO-8601 timestamp string (serialised from the DB `timestamp`). */
   createdAt: string;
 }
 
 /** Fields accepted when creating an article (server assigns the rest). */
 export interface NewArticle {
-  title: string;
+  headline: string;
   body: string;
 }
 
