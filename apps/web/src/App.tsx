@@ -1,35 +1,9 @@
-import { useEffect, useState } from "react";
-import type { Article, ApiResponse } from "@carma/shared";
-
-type State =
-  | { status: "loading" }
-  | { status: "error"; message: string }
-  | { status: "ready"; articles: Article[] };
+import { ArticleListItem } from "./components/ArticleLitItem";
+import { EmptyState } from "./components/EmptyState";
+import { useArticles } from "./hooks/useArticles";
 
 export function App() {
-  const [state, setState] = useState<State>({ status: "loading" });
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function load() {
-      try {
-        const res = await fetch("/api/articles", { signal: controller.signal });
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-        const body = (await res.json()) as ApiResponse<Article[]>;
-        setState({ status: "ready", articles: body.data });
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        setState({
-          status: "error",
-          message: err instanceof Error ? err.message : "Unknown error",
-        });
-      }
-    }
-
-    void load();
-    return () => controller.abort();
-  }, []);
+  const { state } = useArticles();
 
   return (
     <main className="container">
@@ -39,28 +13,17 @@ export function App() {
         Articles served from Postgres via Express + Drizzle.
       </p>
 
-      {state.status === "loading" && <p>Loading…</p>}
-
-      {state.status === "error" && (
+      {state.status === "error" ? (
         <p className="error">Failed to load articles: {state.message}</p>
+      ) : state.status !== "ready" || state.articles.length === 0 ? (
+        <EmptyState loading={state.status !== "ready"} hasQuery={false} />
+      ) : (
+        <ul className="articles">
+          {state.articles.map((article) => (
+            <ArticleListItem key={article.id} article={article} />
+          ))}
+        </ul>
       )}
-
-      {state.status === "ready" &&
-        (state.articles.length === 0 ? (
-          <p>No articles yet.</p>
-        ) : (
-          <ul className="articles">
-            {state.articles.map((article) => (
-              <li key={article.id} className="article">
-                <h2>{article.title}</h2>
-                <p>{article.body}</p>
-                <time dateTime={article.createdAt}>
-                  {new Date(article.createdAt).toLocaleString()}
-                </time>
-              </li>
-            ))}
-          </ul>
-        ))}
     </main>
   );
 }
