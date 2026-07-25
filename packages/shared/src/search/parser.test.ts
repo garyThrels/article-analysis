@@ -57,6 +57,19 @@ describe("parseQuery — operators & precedence", () => {
     expect(parseQuery("oil gas")).toEqual(and(term("oil"), term("gas")));
   });
 
+  it("adjacent bare terms are separate AND'd terms, not a phrase", () => {
+    // `oil OR prices high`: the trailing `prices high` is two consecutive
+    // terms joined by implicit AND — NOT a phrase. With AND binding tighter
+    // than OR this parses as `oil OR (prices AND high)`.
+    expect(parseQuery("oil OR prices high")).toEqual(
+      or(term("oil"), and(term("prices"), term("high"))),
+    );
+    // Contrast: quoting makes it a single phrase node (adjacent, in order).
+    expect(parseQuery('oil OR "prices high"')).toEqual(
+      or(term("oil"), phrase("prices high")),
+    );
+  });
+
   it("parses AND NOT", () => {
     expect(parseQuery("renewable AND NOT nuclear")).toEqual(
       and(term("renewable"), not(term("nuclear"))),
