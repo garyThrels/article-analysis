@@ -18,6 +18,10 @@ interface EnrichOptions {
   concurrency?: number;
   /** Max articles to process this run. */
   limit?: number;
+  /** Restrict to a single article. */
+  articleId?: number;
+  /** Reprocess regardless of status (includes already-`completed` rows). */
+  force?: boolean;
 }
 
 /**
@@ -34,7 +38,11 @@ export async function enrichPending(
   const limit = opts.limit ?? 10_000;
 
   await ensureRowsForAllArticles();
-  const jobs = await claimPending(limit);
+  const jobs = await claimPending({
+    limit,
+    articleId: opts.articleId,
+    force: opts.force,
+  });
 
   let completed = 0;
   let failed = 0;

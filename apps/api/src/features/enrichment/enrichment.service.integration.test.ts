@@ -91,4 +91,33 @@ describe.skipIf(!url)("enrichPending lifecycle (integration)", () => {
     expect(row?.status).toBe("completed");
     expect(row?.errorMessage).toBeNull();
   });
+
+  it("articleId scopes processing to a single article", async () => {
+    await resetToPending(1);
+    await resetToPending(2);
+    await enrichPending(new MockEnricher(), { articleId: 1 });
+    expect((await getRow(1))?.status).toBe("completed");
+    expect((await getRow(2))?.status).toBe("pending"); // untouched
+    await enrichPending(new MockEnricher()); // tidy up article 2
+  });
+
+  it("force reprocesses an already-completed article", async () => {
+    // Ensure article 1 is completed, then reprocess it with force.
+    await enrichPending(new MockEnricher(), { articleId: 1 });
+    const before = await getRow(1);
+    expect(before?.status).toBe("completed");
+
+    const result = await enrichPending(new MockEnricher(), {
+      articleId: 1,
+      force: true,
+    });
+    expect(result.processed).toBe(1); // a completed row WAS reprocessed
+    const after = await getRow(1);
+    expect(after?.status).toBe("completed");
+    expect(after?.attempts ?? 0).toBeGreaterThan(before?.attempts ?? 0);
+
+    // Without force, a completed article is not reprocessed.
+    const noop = await enrichPending(new MockEnricher(), { articleId: 1 });
+    expect(noop.processed).toBe(0);
+  });
 });

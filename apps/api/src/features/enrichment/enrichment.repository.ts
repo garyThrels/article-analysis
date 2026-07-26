@@ -1,4 +1,4 @@
-import { eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../../db/index.js";
 import { articleEnrichments, articles } from "../../db/schema.js";
 import type { EnrichmentResult } from "./enrichment.types.js";
@@ -11,8 +11,17 @@ export interface EnrichmentJob {
   body: string;
 }
 
-/** Statuses eligible for (re)processing. `failed` rows are retried. */
+/** Statuses eligible for (re)processing by default. `failed` rows are retried. */
 const CLAIMABLE = ["pending", "failed"] as const;
+
+export interface ClaimOptions {
+  limit: number;
+  /** Restrict to a single article. */
+  articleId?: number;
+  /** Reprocess regardless of status — includes already-`completed` rows (e.g.
+   *  after a prompt change). */
+  force?: boolean;
+}
 
 /**
  * Self-heal: ensure every article has an enrichment row (status `pending`).
@@ -29,8 +38,16 @@ export async function ensureRowsForAllArticles(): Promise<void> {
   `);
 }
 
-/** Claim up to `limit` articles needing enrichment (pending or failed). */
-export async function claimPending(limit: number): Promise<EnrichmentJob[]> {
+/**
+ * Claim up to `limit` articles to enrich. By default only `pending`/`failed`
+ * rows; `force` includes every status (reprocessing completed rows), and
+ * `articleId` scopes to a single article.
+ */
+export async function claimPending({
+  limit,
+  articleId,
+  force,
+}: ClaimOptions): Promise<EnrichmentJob[]> {
   const rows = await db
     .select({
       enrichmentId: articleEnrichments.id,
@@ -40,7 +57,12 @@ export async function claimPending(limit: number): Promise<EnrichmentJob[]> {
     })
     .from(articleEnrichments)
     .innerJoin(articles, eq(articleEnrichments.articleId, articles.id))
-    .where(inArray(articleEnrichments.status, [...CLAIMABLE]))
+    .where(
+      and(
+        force ? undefined : inArray(articleEnrichments.status, [...CLAIMABLE]),
+        articleId !== undefined ? eq(articleEnrichments.articleId, articleId) : undefined,
+      ),
+    )
     .limit(limit);
   return rows;
 }
