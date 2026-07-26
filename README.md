@@ -119,8 +119,18 @@ yarn db:migrate
 | `yarn build`       | Build every workspace                        |
 | `yarn db:generate` | Generate a Drizzle migration from the schema |
 | `yarn db:migrate`  | Apply pending migrations                     |
-| `yarn db:seed`     | Load `sample_articles.json` and enrich       |
+| `yarn db:seed`     | Load `sample_articles.json` (enqueues pending enrichments) |
+| `yarn db:enrich`   | Enrich pending/failed articles (see options below) |
 | `yarn db:studio`   | Open Drizzle Studio                          |
+
+`db:enrich` options (run from the repo root or `apps/api`):
+
+```bash
+yarn db:enrich                 # enrich all pending/failed articles
+yarn db:enrich 5               # only article 5 (if pending/failed)  — --article 5 / -a 5 also work
+yarn db:enrich 5 --force       # reprocess article 5 even if completed (e.g. after a prompt change)
+yarn db:enrich --force         # reprocess ALL articles regardless of status
+```
 
 ---
 
@@ -370,11 +380,13 @@ internal).
 thinking disabled on the summary, and a small concurrency cap.
 
 **How it runs.** Synchronously via **`yarn db:enrich`** (no key → mock, zero cost;
-`ANTHROPIC_API_KEY` set → real). In production this would fire on ingestion via a
-queue — the `article_enrichments` row is already the work-item shape, so a
-per-article worker calling `enrichPending` drops in. _(Queue on ingestion, a
-fuller provider abstraction, the Anthropic Batch API for bulk backfill, and a UI /
-aggregate-by-sentiment view remain enhancements.)_
+`ANTHROPIC_API_KEY` set → real). It can enrich the whole backlog, a **single
+article** (`yarn db:enrich 5`), or **reprocess** already-`completed` rows with
+`--force` (e.g. after changing a prompt) — see the [script options](#useful-scripts).
+In production this would fire on ingestion via a queue — the `article_enrichments`
+row is already the work-item shape, so a per-article worker calling `enrichPending`
+drops in. _(Queue on ingestion, a fuller provider abstraction, the Anthropic Batch
+API for bulk backfill, and a UI / aggregate-by-sentiment view remain enhancements.)_
 
 ### API surface
 
