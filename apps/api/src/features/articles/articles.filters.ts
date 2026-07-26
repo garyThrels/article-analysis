@@ -13,7 +13,7 @@ export class FilterError extends Error {
 }
 
 /** Parse a query param as a positive integer id, or throw FilterError. */
-function parseId(raw: unknown, field: string): number | undefined {
+export function parseId(raw: unknown, field: string): number | undefined {
   if (typeof raw !== "string" || raw.length === 0) return undefined;
   const n = Number(raw);
   if (!Number.isInteger(n) || n <= 0) {

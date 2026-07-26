@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AggregateChart } from "./components/AggregateChart";
 import { ArticleListItem } from "./components/ArticleListItem";
 import { EmptyState } from "./components/EmptyState";
 import { SearchBar } from "./components/SearchBar";
@@ -13,7 +14,8 @@ export function App() {
   const { state, isFetching, goNext, goPrev } = useArticles(query);
 
   const setSearch = (q: string) => setQuery((prev) => ({ ...prev, q }));
-  const setFilters = (f: FilterValue) => setQuery((prev) => ({ ...prev, ...f }));
+  const setFilters = (f: FilterValue) =>
+    setQuery((prev) => ({ ...prev, ...f }));
 
   const hasQuery =
     query.q.trim().length > 0 ||
@@ -35,37 +37,48 @@ export function App() {
         Articles served from Postgres via Express + Drizzle.
       </p>
 
-      <SearchBar onSearch={setSearch} />
-      <Filters
-        sources={lookups.sources}
-        languages={lookups.languages}
-        onChange={setFilters}
-      />
+      <div className="content">
+        <div className="container-aggregate">
+          <AggregateChart sources={lookups.sources} />
+        </div>
 
-      {state.status === "error" ? (
-        <p className="error">Failed to load articles: {state.message}</p>
-      ) : state.status !== "ready" || state.articles.length === 0 ? (
-        <EmptyState loading={state.status !== "ready"} hasQuery={hasQuery} />
-      ) : (
-        <>
-          <ul className="articles" aria-busy={isFetching}>
-            {state.articles.map((article) => (
-              <ArticleListItem key={article.id} article={article} />
-            ))}
-          </ul>
-          <nav className="pager" aria-label="Pagination">
-            <button type="button" onClick={goPrev} disabled={!canPrev}>
-              ← Newer
-            </button>
-            <span className="pager-status">
-              {isFetching ? "Loading…" : `${state.articles.length} shown`}
-            </span>
-            <button type="button" onClick={goNext} disabled={!canNext}>
-              Older →
-            </button>
-          </nav>
-        </>
-      )}
+        <div className="container-search">
+          <SearchBar onSearch={setSearch} />
+          <Filters
+            sources={lookups.sources}
+            languages={lookups.languages}
+            onChange={setFilters}
+          />
+
+          {state.status === "error" ? (
+            <p className="error">Failed to load articles: {state.message}</p>
+          ) : state.status !== "ready" || state.articles.length === 0 ? (
+            <EmptyState
+              loading={state.status !== "ready"}
+              hasQuery={hasQuery}
+            />
+          ) : (
+            <>
+              <ul className="articles" aria-busy={isFetching}>
+                {state.articles.map((article) => (
+                  <ArticleListItem key={article.id} article={article} />
+                ))}
+              </ul>
+              <nav className="pager" aria-label="Pagination">
+                <button type="button" onClick={goPrev} disabled={!canPrev}>
+                  ← Newer
+                </button>
+                <span className="pager-status">
+                  {isFetching ? "Loading…" : `${state.articles.length} shown`}
+                </span>
+                <button type="button" onClick={goNext} disabled={!canNext}>
+                  Older →
+                </button>
+              </nav>
+            </>
+          )}
+        </div>
+      </div>
     </main>
   );
 }

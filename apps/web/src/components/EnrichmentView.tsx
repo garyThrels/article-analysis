@@ -26,13 +26,15 @@ export function EnrichmentView({ enrichment }: Props) {
     <div className="enrichment">
       {summary && (
         <p className="enrichment-summary">
-          <span className="enrichment-label">AI summary</span>
+          <div className="enrichment-label">AI summary</div>
           {summary}
         </p>
       )}
       <div className="enrichment-tags">
         {sentiment && (
-          <span className={`sentiment sentiment-${sentiment}`}>{sentiment}</span>
+          <span className={`sentiment sentiment-${sentiment}`}>
+            {sentiment}
+          </span>
         )}
         {topics.map((topic) => (
           <span key={topic} className="topic">

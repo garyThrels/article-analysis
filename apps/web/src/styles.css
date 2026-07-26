@@ -14,7 +14,7 @@ body {
 }
 
 .container {
-  max-width: 42rem;
+  max-width: 62rem;
   margin: 0 auto;
   padding: 2rem 1.25rem;
 }
@@ -81,8 +81,6 @@ h1 {
 }
 
 .enrichment-label {
-  display: inline-block;
-  margin-right: 0.45rem;
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -149,7 +147,7 @@ h1 {
 }
 
 .search {
-  margin: 1.25rem 0 1.75rem;
+  margin: 0 0 1.75rem;
 }
 
 .search-row {
@@ -208,6 +206,73 @@ h1 {
 
 .search-error {
   color: #d33;
+}
+
+/* --- Aggregate chart --- */
+.chart-card {
+  margin: 0 0 1.75rem;
+  padding: 1rem 1.1rem 1.25rem;
+  border: 1px solid color-mix(in oklab, currentColor 15%, transparent);
+  border-radius: 0.6rem;
+}
+
+.chart-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.chart-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.chart-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.interval-toggle {
+  display: inline-flex;
+  border: 1px solid color-mix(in oklab, currentColor 30%, transparent);
+  border-radius: 0.4rem;
+  overflow: hidden;
+}
+
+.interval-toggle button {
+  padding: 0.35rem 0.7rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.interval-toggle button + button {
+  border-left: 1px solid color-mix(in oklab, currentColor 30%, transparent);
+}
+
+.interval-toggle button.active {
+  background: color-mix(in oklab, currentColor 15%, transparent);
+  font-weight: 600;
+}
+
+.chart-canvas {
+  position: relative;
+  height: 260px;
+}
+
+.chart-empty {
+  margin: 0;
+  padding-top: 2rem;
+  text-align: center;
+  opacity: 0.6;
+  font-size: 0.85rem;
 }
 
 .filters {

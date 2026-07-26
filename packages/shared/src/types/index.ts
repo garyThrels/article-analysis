@@ -92,3 +92,18 @@ export interface Lookups {
   sources: Source[];
   languages: Language[];
 }
+
+/** Time bucket granularity for the aggregate view. */
+export type TimeInterval = "month" | "week";
+
+/**
+ * Article counts for one time bucket: the overall `total` (all articles,
+ * regardless of sentiment or enrichment state) plus the per-sentiment breakdown
+ * of the classified ones.
+ */
+export interface AggregateBucket {
+  /** ISO-8601 timestamp of the period start (from `date_trunc`). */
+  bucket: string;
+  total: number;
+  bySentiment: Record<Sentiment, number>;
+}

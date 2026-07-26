@@ -276,11 +276,20 @@ the columns the client needs are projected.
 
 ### Aggregate endpoint
 
-`GET /api/articles/aggregate` returns article counts grouped by month (via
-`date_trunc('month', published_at)`), accepting the same filter set as the list
-endpoint plus a group-by dimension (defaulting to sentiment, which powers the
-dashboard chart). It's a single grouped query — no N+1 — and reuses the filter
-indexes above.
+`GET /api/articles/aggregate` returns per-bucket article counts by
+`date_trunc(interval, published_at)` (`interval` ∈ `month`/`week`, whitelisted — the
+only value interpolated into SQL), optionally filtered by `source`. One grouped
+query (no N+1) computes both an overall **`total`** (via `LEFT JOIN`, so it counts
+every article regardless of enrichment state) and the per-sentiment breakdown (via
+`count(*) FILTER (WHERE …)`) over the `(published_at, id)` index.
+
+The chart shows a bold **Total** line plus one line per sentiment. Colours match
+the sentiment badges but are
+**not load-bearing**: `positive`(green)↔`negative`(red) collapse under red-green
+CVD (validated with the dataviz palette script — ΔE ≈ 4 deutan), so each line also
+carries a distinct **marker shape + dash pattern** and a labelled legend, making
+the chart readable in grayscale. Small multiples (one mini-chart per sentiment)
+would be the stricter alternative.
 
 ### Boolean search approach
 
@@ -394,7 +403,7 @@ API for bulk backfill, and a UI / aggregate-by-sentiment view remain enhancement
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `GET /api/articles`           | Keyset-paginated list. Optional filters: `?q=` boolean search (parser → `tsquery`), `?source=<id>`, `?language=<id>`, `?from=`/`?to=` (ISO) date range. `?limit=`, `?cursor=`, `?direction=next\|prev` drive pagination. |
 | `GET /api/lookups`            | Reference data for the filter controls: `{ sources, languages }`.                                                                                                                                                        |
-| `GET /api/articles/aggregate` | Counts grouped by month, filterable (sentiment/source/topic). _(planned)_                                                                                                                                                |
+| `GET /api/articles/aggregate` | Article counts over time — `?interval=month\|week` (default month), optional `?source=<id>`. Returns `AggregateBucket[]` (`{ bucket, total, bySentiment }`): overall total + per-sentiment breakdown; powers the multi-line chart. |
 
 Search and filters are optional query params on the list endpoint rather than
 separate routes, so they compose with each other and with the keyset pagination.
