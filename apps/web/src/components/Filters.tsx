@@ -28,19 +28,21 @@ export function Filters({ sources, languages, onChange }: Props) {
 
   const rangeInvalid = from !== "" && to !== "" && to < from;
 
-  // Apply the current selection unless the date range is invalid.
+  // Apply the current selection. Source/language always take effect; an invalid
+  // date range simply contributes no date filter (the error message flags it),
+  // so changing a dropdown is never silently dropped by a broken range.
   function apply(next: {
     sourceId: number | null;
     languageId: number | null;
     from: string;
     to: string;
   }) {
-    if (next.from !== "" && next.to !== "" && next.to < next.from) return;
+    const invalid = next.from !== "" && next.to !== "" && next.to < next.from;
     onChange({
       sourceId: next.sourceId,
       languageId: next.languageId,
-      from: next.from || null,
-      to: next.to || null,
+      from: invalid ? null : next.from || null,
+      to: invalid ? null : next.to || null,
     });
   }
 

@@ -18,6 +18,12 @@ describe("parseAggregateParams", () => {
     expect(() => parseAggregateParams({ interval: "day" })).toThrow(FilterError);
   });
 
+  it("rejects inherited Object.prototype keys as intervals", () => {
+    for (const key of ["constructor", "toString", "__proto__", "hasOwnProperty"]) {
+      expect(() => parseAggregateParams({ interval: key })).toThrow(FilterError);
+    }
+  });
+
   it("rejects a non-integer source", () => {
     expect(() => parseAggregateParams({ source: "abc" })).toThrow(FilterError);
   });

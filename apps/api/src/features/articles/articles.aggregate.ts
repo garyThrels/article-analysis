@@ -6,8 +6,13 @@ import { FilterError, parseId } from "./articles.filters.js";
 
 // Whitelist of allowed date_trunc granularities. Only these literals are ever
 // interpolated into SQL — never raw request input — so the interval can't be an
-// injection vector.
-const INTERVALS: Record<string, TimeInterval> = { month: "month", week: "week" };
+// injection vector. A Set is used (not an object map) so inherited keys like
+// `constructor`/`__proto__` can never masquerade as a valid interval.
+const INTERVALS = new Set<TimeInterval>(["month", "week"]);
+
+function isInterval(value: string): value is TimeInterval {
+  return INTERVALS.has(value as TimeInterval);
+}
 
 export interface AggregateParams {
   interval: TimeInterval;
@@ -19,11 +24,10 @@ export function parseAggregateParams(
   query: Record<string, unknown>,
 ): AggregateParams {
   const rawInterval = typeof query.interval === "string" ? query.interval : "month";
-  const interval = INTERVALS[rawInterval];
-  if (!interval) {
+  if (!isInterval(rawInterval)) {
     throw new FilterError("Invalid interval: expected 'month' or 'week'");
   }
-  return { interval, sourceId: parseId(query.source, "source") };
+  return { interval: rawInterval, sourceId: parseId(query.source, "source") };
 }
 
 /**

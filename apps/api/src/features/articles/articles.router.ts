@@ -76,7 +76,15 @@ articlesRouter.get("/", async (req, res) => {
   const page = await findArticlesPage({ limit, direction, anchor, filter });
 
   if (page.rows.length === 0) {
-    const empty: Paginated<Article> = { data: [], pageInfo: EMPTY_PAGE_INFO };
+    // An empty page can happen from a stale cursor or a boundary row deleted
+    // between requests. If the user arrived via a cursor, echo it back and
+    // enable the *opposite* direction so they can reverse out of the dead end
+    // instead of being stranded with both pager buttons disabled. Without a
+    // cursor (empty first page) there is genuinely nowhere to go.
+    const pageInfo = cursorToken
+      ? { cursor: cursorToken, hasNext: direction === "prev", hasPrev: direction === "next" }
+      : EMPTY_PAGE_INFO;
+    const empty: Paginated<Article> = { data: [], pageInfo };
     return res.json(empty);
   }
 

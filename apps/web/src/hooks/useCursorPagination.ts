@@ -55,7 +55,5 @@ export function useCursorPagination(
     request,
     goNext,
     goPrev,
-    canNext: pageInfo?.hasNext ?? false,
-    canPrev: pageInfo?.hasPrev ?? false,
   };
 }

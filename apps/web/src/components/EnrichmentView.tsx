@@ -25,10 +25,10 @@ export function EnrichmentView({ enrichment }: Props) {
   return (
     <div className="enrichment">
       {summary && (
-        <p className="enrichment-summary">
-          <div className="enrichment-label">AI summary</div>
-          {summary}
-        </p>
+        <div className="enrichment-summary">
+          <span className="enrichment-label">AI summary</span>
+          <p>{summary}</p>
+        </div>
       )}
       <div className="enrichment-tags">
         {sentiment && (
