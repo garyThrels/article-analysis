@@ -345,19 +345,44 @@ wildcard into a prefix one.)
 
 ### LLM enrichment
 
-Enrichment lives behind an **`Enricher` interface** with two implementations —
-`AnthropicEnricher` and `MockEnricher` — selected at runtime by the presence of
-`ANTHROPIC_API_KEY`. This keeps the app fully demonstrable with no API spend while
-making the real integration a drop-in. See the [cost analysis](#llm-cost-analysis)
-for model selection, guardrails, and projected cost.
+Enrichment lives behind an **`Enricher` interface** (`apps/api/src/features/enrichment/`)
+with two implementations — `AnthropicEnricher` and `MockEnricher` — selected at
+runtime by the presence of `ANTHROPIC_API_KEY`. This keeps the app fully
+demonstrable with no API spend while making the real integration a drop-in (the
+interface is also the seam that would let us swap providers). `AnthropicEnricher`
+makes two calls per article: **Sonnet** for the 1–2 sentence summary and **Haiku**
+for sentiment + topics via **structured output**. See the
+[cost analysis](#llm-cost-analysis) for model selection, guardrails, and cost.
+
+**Own table + lifecycle.** Enrichment is a separate `article_enrichments` table
+(1:1 with `articles`) carrying a **status** (`pending`/`processing`/`completed`/
+`failed`), the result columns, an **`error_message`**, and an `attempts` counter —
+effectively the work item a production queue would process. A `pending` row is
+enqueued per article at ingest/seed time; the runner transitions
+`pending`/`failed` → `processing` → `completed`|`failed`, capturing any error on
+the row without aborting the batch (idempotent — `completed` rows are skipped,
+`failed` rows retried). The API returns it nested on each article as
+`enrichment { status, summary, sentiment, topics }` (the `error_message` stays
+internal).
+
+**Cost guardrails** (`enrichment.config.ts`): body truncated to ~6k chars, a
+`count_tokens` pre-flight enforcing an input-token ceiling, small `max_tokens`,
+thinking disabled on the summary, and a small concurrency cap.
+
+**How it runs.** Synchronously via **`yarn db:enrich`** (no key → mock, zero cost;
+`ANTHROPIC_API_KEY` set → real). In production this would fire on ingestion via a
+queue — the `article_enrichments` row is already the work-item shape, so a
+per-article worker calling `enrichPending` drops in. _(Queue on ingestion, a
+fuller provider abstraction, the Anthropic Batch API for bulk backfill, and a UI /
+aggregate-by-sentiment view remain enhancements.)_
 
 ### API surface
 
-| Endpoint                      | Purpose                                                                                     |
-| ----------------------------- | ------------------------------------------------------------------------------------------- |
+| Endpoint                      | Purpose                                                                                                                                                                                                                  |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `GET /api/articles`           | Keyset-paginated list. Optional filters: `?q=` boolean search (parser → `tsquery`), `?source=<id>`, `?language=<id>`, `?from=`/`?to=` (ISO) date range. `?limit=`, `?cursor=`, `?direction=next\|prev` drive pagination. |
-| `GET /api/lookups`            | Reference data for the filter controls: `{ sources, languages }`.                           |
-| `GET /api/articles/aggregate` | Counts grouped by month, filterable (sentiment/source/topic). _(planned)_                   |
+| `GET /api/lookups`            | Reference data for the filter controls: `{ sources, languages }`.                                                                                                                                                        |
+| `GET /api/articles/aggregate` | Counts grouped by month, filterable (sentiment/source/topic). _(planned)_                                                                                                                                                |
 
 Search and filters are optional query params on the list endpoint rather than
 separate routes, so they compose with each other and with the keyset pagination.
@@ -370,7 +395,7 @@ errors use `ApiError`, both from `@carma/shared`. A malformed `q`, a bad
 
 **Bug:** the search box commits its text to the query only on submit (Enter /
 Search), while the filter controls commit on change. Because both write into the
-same query object, editing the search input *without submitting* and then changing
+same query object, editing the search input _without submitting_ and then changing
 a filter re-applies the **stale** search term alongside the new filter.
 
 _Repro:_ type a phrase → Search → clear the input (don't press Enter) → change the
@@ -386,7 +411,7 @@ submitted value.
 **Planned fix:** lift the whole query into a **context provider** as the single
 source of truth, and have the search input keep the provider's `q` current as the
 user types (debounced) — or, at minimum, commit the input's current text whenever
-*any* filter changes. Then changing a filter uses whatever is in the box right now,
+_any_ filter changes. Then changing a filter uses whatever is in the box right now,
 Enter or not, and search + filters always stay consistent. This restructure is not
 yet done.
 

@@ -3,7 +3,13 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { sql } from "drizzle-orm";
 import { db, pool } from "./index.js";
-import { articles, languages, sources, type NewArticleRow } from "./schema.js";
+import {
+  articleEnrichments,
+  articles,
+  languages,
+  sources,
+  type NewArticleRow,
+} from "./schema.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const sampleFile = resolve(here, "seeders/data/sample_articles.json");
@@ -103,9 +109,20 @@ export async function seedIfEmpty(): Promise<void> {
     };
   });
 
-  await db.insert(articles).values(values);
+  const inserted = await db
+    .insert(articles)
+    .values(values)
+    .returning({ id: articles.id });
+
+  // Enqueue a pending enrichment row per article (the work items db:enrich processes).
+  if (inserted.length > 0) {
+    await db
+      .insert(articleEnrichments)
+      .values(inserted.map((a) => ({ articleId: a.id })));
+  }
+
   console.log(
-    `[seed] inserted ${values.length} articles, ${sourceIds.size} sources, ${languageIds.size} languages`,
+    `[seed] inserted ${values.length} articles, ${sourceIds.size} sources, ${languageIds.size} languages, ${inserted.length} pending enrichments`,
   );
 }
 

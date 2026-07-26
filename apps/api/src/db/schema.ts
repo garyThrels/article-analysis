@@ -3,6 +3,7 @@ import {
   customType,
   index,
   integer,
+  pgEnum,
   pgTable,
   serial,
   smallint,
@@ -93,6 +94,54 @@ export const articles = pgTable(
   ],
 );
 
+/** Article sentiment produced by LLM enrichment. */
+export const sentimentEnum = pgEnum("sentiment", [
+  "positive",
+  "negative",
+  "neutral",
+  "mixed",
+]);
+
+/** Lifecycle of an article's enrichment work item. */
+export const enrichmentStatusEnum = pgEnum("enrichment_status", [
+  "pending",
+  "processing",
+  "completed",
+  "failed",
+]);
+
+/**
+ * LLM enrichment for an article (1:1). Kept in its own table so it carries a
+ * status lifecycle + error message — effectively the work item a production
+ * queue would process. Result columns are null until `status = 'completed'`.
+ */
+export const articleEnrichments = pgTable(
+  "article_enrichments",
+  {
+    id: serial("id").primaryKey(),
+    articleId: integer("article_id")
+      .notNull()
+      .unique()
+      .references(() => articles.id, { onDelete: "cascade" }),
+    status: enrichmentStatusEnum("status").notNull().default("pending"),
+    summary: text("summary"),
+    sentiment: sentimentEnum("sentiment"),
+    topics: text("topics").array(),
+    errorMessage: text("error_message"),
+    attempts: integer("attempts").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    // The enrichment runner scans by status (pending/failed) to find work.
+    index("article_enrichments_status_idx").on(t.status),
+  ],
+);
+
 // Inferred row types. The generated `searchVector` column is excluded from the
 // insert type automatically. The API maps these to the wire-facing `Article`
 // type from @carma/shared before responding.
@@ -101,3 +150,6 @@ export type NewArticleRow = typeof articles.$inferInsert;
 
 export type SourceRow = typeof sources.$inferSelect;
 export type LanguageRow = typeof languages.$inferSelect;
+
+export type ArticleEnrichmentRow = typeof articleEnrichments.$inferSelect;
+export type NewArticleEnrichmentRow = typeof articleEnrichments.$inferInsert;

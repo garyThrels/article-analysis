@@ -1,4 +1,5 @@
 import type { SQL } from "drizzle-orm";
+import type { EnrichmentStatus, Sentiment } from "@carma/shared";
 
 /** Direction to page in, relative to a keyset anchor. */
 export type Direction = "next" | "prev";
@@ -17,6 +18,11 @@ export interface ArticleListRow {
   source: string;
   publishedAt: Date;
   createdAt: Date;
+  // Left-joined enrichment — all null when no enrichment row exists yet.
+  enrichmentStatus: EnrichmentStatus | null;
+  summary: string | null;
+  sentiment: Sentiment | null;
+  topics: string[] | null;
 }
 
 /** Inputs that narrow the article list. */

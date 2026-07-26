@@ -1,6 +1,6 @@
 import { and, eq, sql, type SQL } from "drizzle-orm";
 import { db } from "../../db/index.js";
-import { articles, sources } from "../../db/schema.js";
+import { articleEnrichments, articles, sources } from "../../db/schema.js";
 import { keysetPredicate, newerThan, olderThan, orderFor } from "./articles.pagination.js";
 import type { ArticlesPage, FindArticlesPageParams } from "./articles.types.js";
 
@@ -35,9 +35,16 @@ export async function findArticlesPage({
       source: sources.name,
       publishedAt: articles.publishedAt,
       createdAt: articles.createdAt,
+      // Enrichment (1:1, left-joined — null until a row exists). error_message
+      // is intentionally not selected; it stays internal.
+      enrichmentStatus: articleEnrichments.status,
+      summary: articleEnrichments.summary,
+      sentiment: articleEnrichments.sentiment,
+      topics: articleEnrichments.topics,
     })
     .from(articles)
     .innerJoin(sources, eq(articles.sourceId, sources.id))
+    .leftJoin(articleEnrichments, eq(articleEnrichments.articleId, articles.id))
     .$dynamic();
 
   if (where) query.where(where);

@@ -1,3 +1,25 @@
+/** LLM-derived sentiment classification for an article. */
+export type Sentiment = "positive" | "negative" | "neutral" | "mixed";
+
+/** Lifecycle status of an article's enrichment. */
+export type EnrichmentStatus =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed";
+
+/**
+ * LLM enrichment for an article, as exposed to clients. Result fields are null
+ * until `status` is `"completed"`. The internal `error_message` is intentionally
+ * NOT part of the wire shape.
+ */
+export interface ArticleEnrichment {
+  status: EnrichmentStatus;
+  summary: string | null;
+  sentiment: Sentiment | null;
+  topics: string[];
+}
+
 /** A single article record as returned by the API. */
 export interface Article {
   id: number;
@@ -9,6 +31,8 @@ export interface Article {
   publishedAt: string;
   /** ISO-8601 timestamp string (serialised from the DB `timestamp`). */
   createdAt: string;
+  /** LLM enrichment, or null if no enrichment row exists yet. */
+  enrichment: ArticleEnrichment | null;
 }
 
 /** Fields accepted when creating an article (server assigns the rest). */

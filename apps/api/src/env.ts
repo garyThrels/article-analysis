@@ -19,4 +19,8 @@ function required(name: string): string {
 export const env = {
   databaseUrl: required('DATABASE_URL'),
   port: Number(process.env.API_PORT ?? 3000),
+  // Optional: when set, enrichment uses the real Anthropic API; otherwise the
+  // zero-cost MockEnricher is used. Read directly from process.env at call time
+  // by the enricher factory too.
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
 } as const;

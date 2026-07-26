@@ -16,6 +16,8 @@
     "test": "yarn workspaces foreach -Ap --include '@carma/shared' --include '@carma/api' run test",
     "db:generate": "yarn workspace @carma/api db:generate",
     "db:migrate": "yarn workspace @carma/api db:migrate",
+    "db:seed": "yarn workspace @carma/api db:seed",
+    "db:enrich": "yarn workspace @carma/api db:enrich",
     "db:studio": "yarn workspace @carma/api db:studio"
   },
   "engines": {
