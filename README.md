@@ -153,29 +153,30 @@ The [Reflection](#reflection) and [LLM Transcript](#llm-transcript) sections fol
 
 ## Reflection
 
-Overall I have come to make use of AI and the agentic development flow throughout my day, and throughout the entirity of this small project. Using Perplexity, I was able to grasp a high level plan on how I wanted to tackle the problem. Asking it questions and learning more about different terminology and steps it proposes, especially in rela1tion to Postgresql and its various tools which I am not all that familiar with.
+Overall I have come to make use of AI and the agentic development flow throughout my day, and throughout the entirity of this small project. Using Perplexity, I was able to grasp a high level plan on how I wanted to tackle the problem. Asking it questions and learning more about different terminology and steps it proposes, especially in relation to Postgresql and its various tools which I am not all that familiar with.
 
 Through this project alone though, I learned alot more about PostGreSQL and how useful it can potentially be when handling large amounts of text data efficiently within requiring tools like ElasticSearch and Meilisearch.
 
 After that initial planning, through Claude CLI I was able to easily setup a simple project with a single docker command to execute it, structured and ready to be use both agentically and through manual intervention.
-It helped greatlyin 2 areas:
+It helped greatly in 2 areas:
 
-- When it can to indexing the right columns, where although I knew what I wanted to be easily searchable and indexed, AI helps to validate my reasoning by providing comprehensive reasoning as to why it might be needed, along with potential improvmeents down the line.
-- Creating a custom build Boolean Search parser, AST and compiler. Something that would have taken far longer without AI to develop and get right. When it comes to this sort of logic heavy implementation, I also like to write unit tests, allowing the agent to take a test driven approach, so that we ensure the validity of the logic.
+- When it came to indexing the right columns, where although I knew what I wanted to be easily searchable and indexed, AI helps to validate my reasoning by providing comprehensive reasoning as to why it might be needed, along with potential improvmeents down the line.
+- Creating a custom built Boolean Search parser, AST and compiler. Something that would have taken far longer without AI to develop and get right. When it comes to this sort of logic heavy implementation, I also like to write unit tests, allowing the agent to take a test driven approach, so that we ensure the validity of the logic.
 
 As for any misleading, there were no large instances where I think this happened. I try to be cautious, first breaking down large features and then planning each while giving context of the full picture to the agent. I question certain choices and research others to be sure of what will happen. The misleads worth noting:
 
-- The first was likely when handling the wildcard search. My assumption was that a suffix/prefix with _ would have worked, and the agent was moving along with it, while it made a smal reference as to how it would work in actuality. That made me question it, even looking into other solutions and re-reading the brief to see what was expected. As per the brief, a prefix with _ was enough (I hope) so we continued, but took note of possible solutions.
-- Tests were being skipped, since Vitest does not read our local .env file, and we were testing again the database. Without the database path, tests were being skipped, even though we had written them, creating a false sense of security. After adding the env variable as part of the command to execute the tests, I was able to debug some minor issues and confirm that the logic was working as expected.
+- The first was likely when handling the wildcard search. My assumption was that a suffix/prefix with \* would have worked, and the agent was moving along with it, while it made a small reference as to how it would work in actuality. That made me question it, even looking into other solutions and re-reading the brief to see what was expected. As per the brief, a prefix with \* was enough (I hope) so we continued, but took note of possible solutions.
+- Tests were being skipped, since Vitest does not read our local .env file, and we were testing against the database. Without the database path, tests were being skipped, even though we had written them, creating a false sense of security. After adding the env variable as part of the command to execute the tests, I was able to debug some minor issues and confirm that the logic was working as expected.
 
 With more time:
 
-- I would have liked to see how the project fares with a large dataset, comparing the indexed searches with non indexed ones.
+- I would have liked to see how the project fares with a large dataset, comparing the indexed searches with non-indexed ones.
 - Improved the UI, splitting and improving the data aggregation and listing, possibly even showing information about enrichment status for articles. Adding a single article page with translation capability for the articles, making use of Google's translate apis or similar.
 - Introduced a queue to handle processing the data ingress and enrichment step.
-- Improved the search and filtering to include the enriched fields for the article, along with a ranking system and fuzzy word matching.
+- Improved the search and filtering to include search within the enriched fields of the article, along with a ranking system and fuzzy word matching.
 - Cross language search - searching a word using English would still match in an article written in Chinese, possibly even vice versa. This would mean storing English translations of other articles, and later if we allow search by other langauges, we too would translate the search term to english first before searching it. This is just a quick thought though, and would require more in depth research.
 - Use vendor agnostic AI libraries like Vercel/ai to allow us to easily switch between model providers and models used, currenlty we would need to interface other providers like OpenAI ourselves. It would also make it easier to have fallback models, or switch models depending on their latest pricing.
+- Test out self hosted models, making use of a vendor agnostic approach to allow switching based on load, errors and so on.
 
 Overall it was honestly a fun brief, hopefully the quality expectations were met and I will definitely see how the solution does in handling large datasets.
 
